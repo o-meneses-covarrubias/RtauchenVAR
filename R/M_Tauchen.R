@@ -1,9 +1,9 @@
 
 #Discretizes a vector VAR(1) process of size M according to Tauchen (1986)
-#y_t = A y_t-1 + eps
 
+#The package includes the functions TgridVAR, RtauchenVAR 
 
-#Tgrid generates the grid for the aproximating discrete-valued 
+#TgridVAR generates the grid for the aproximating discrete-valued 
 #vector Markov Chain of the VAR(1) process
 
 #Inputs: 
@@ -15,10 +15,9 @@
 
 #Output:
 #List of M vectors with the sizes specified in Ni. Each vector contains 
-#the posible states of each component of y_t
+#the posible states of each component of the autoregresive vector y_t
 
-
-Tgrid_vec=function(Ni, SSigma_eps, A, m){
+TgridVAR=function(Ni, SSigma_eps, A, m){
 #Defines the length of the random vector of the process
   M = length(Ni)
 #Initializes values for the grid, variances matrix of the vector, and lenght of step for each dimension
@@ -36,37 +35,30 @@ Tgrid_vec=function(Ni, SSigma_eps, A, m){
   }
 #Converts the result to a matrix of variances
   SSigma_y = matrix(vec_SSigma_y,M,M)
-#Obtains the standard deviations implied
+#Obtains the standard deviations asociated with the matrix
   ssigma_y = sqrt(diag(SSigma_y))
-#Sets the values for variances and steps accordingly
-  
+#Sets the values for the lenght of steps of the gird accordingly for each component
   w = 2*m*ssigma_y/(Ni-1)
+  
 #Creates a list in which each element is the grid for each component of y_t
   for(j in 1:M){
     aux_vec_yi = -m*ssigma_y[j] + c(0:(Ni[j]-1))*w[j]
     grid[[j]]= aux_vec_yi
   }
+#Returns the list with the grid for each dimension
   return(grid)
 }
 
-#Ejemplo Multivariado:
-# A=matrix(c(0.7,0.3,0.2,0.5),ncol=2)
-# Ni=c(5,5)
-# SSigma_eps=diag(2)*(0.02^2)
-# m=3
+Tgridstates=function(Ni, SSigma_eps, A, m){
+  
+}
 
-#Ejemplo Univariado:
-# A=0.98
-# Ni=5
-# SSigma_eps=0.02^2
-# m=3
-
-#RTauchen_mult generates the transition matrix for all posible states. The states 
-#are ordered in a vector as specified in Tauchen(1986)
+#RTauchenVAR generates the transition matrix for all posible states. The states 
+#are in a vector of the lenght specified in Tauchen(1986).
 
 Rtauchen_vec=function(Ni, SSigma_eps, A, m){
   
-  grid = Tgrid_vec(Ni, SSigma_eps, A, m)
+  grid = TgridVAR(Ni, SSigma_eps, A, m)
   N_star = prod(Ni)
   M = length(Ni)
 
@@ -140,3 +132,14 @@ Rtauchen_vec=function(Ni, SSigma_eps, A, m){
   return(P)
 }
 
+#Ejemplo Multivariado:
+# A=matrix(c(0.7,0.3,0.2,0.5),ncol=2)
+# Ni=c(5,5)
+# SSigma_eps=diag(2)*(0.02^2)
+# m=3
+
+#Ejemplo Univariado:
+# A=0.98
+# Ni=5
+# SSigma_eps=0.02^2
+# m=3
