@@ -49,35 +49,44 @@ TgridVAR=function(Ni, SSigma_eps, A, m){
   return(grid)
 }
 
-Tgridstates=function(Ni, SSigma_eps, A, m){
-  
-}
-
-#RTauchenVAR generates the transition matrix for all posible states. The states 
-#are in a vector of the lenght specified in Tauchen(1986).
-
-Rtauchen_vec=function(Ni, SSigma_eps, A, m){
-  
+Tstates_grid=function(Ni, SSigma_eps, A, m){
   grid = TgridVAR(Ni, SSigma_eps, A, m)
-  N_star = prod(Ni)
-  M = length(Ni)
-
-  grid_index = vector(mode = "list", length = M)
-  for(j in 1:M){
-    aux_vec_l = c(1:(Ni[j]))
-    grid_index[[j]]= aux_vec_l
-  }
   
   states_grid = expand.grid(grid)
   rownames(states_grid) = paste0("state", seq_len(nrow(states_grid)))
   colnames(states_grid) = paste0("y", seq_len(ncol(states_grid)))
   states_grid = data.matrix(states_grid)
   
+  return(states_grid)
+}
+
+Tstates_grid_index=function(Ni){
+  M = length(Ni)
+  grid_index = vector(mode = "list", length = M)
+  for(j in 1:M){
+    aux_vec_l = c(1:(Ni[j]))
+    grid_index[[j]]= aux_vec_l
+  }
+  
   states_grid_index = expand.grid(grid_index)
   rownames(states_grid_index) = paste0("state", seq_len(nrow(states_grid_index)))
   colnames(states_grid_index) = paste0("y", seq_len(ncol(states_grid_index)))
   states_grid_index = data.matrix(states_grid_index)
   
+  return(states_grid_index)
+}
+
+
+
+#RTauchenVAR generates the transition matrix for all posible states. The states 
+#are in a vector of the lenght specified in Tauchen(1986).
+
+Rtauchen_vec=function(Ni, SSigma_eps, A, m){
+  M = length(Ni)
+  N_star = prod(Ni)
+  grid = TgridVAR(Ni, SSigma_eps, A, m)
+  states_grid = Tstates_grid(Ni, SSigma_eps, A, m)
+  states_grid_index = Tstates_grid_index(Ni)
   
   
   if(M==1){
@@ -87,14 +96,16 @@ Rtauchen_vec=function(Ni, SSigma_eps, A, m){
     vec_SSigma_eps = matrix(c(SSigma_eps))
     vec_SSigma_y = solve(diag(M^2) - kronecker(A,A)) %*% vec_SSigma_eps
   }
+  
   SSigma_y = matrix(vec_SSigma_y,M,M)
-  SSigma_eps = matrix(vec_SSigma_eps,M,M)
   ssigma_y = sqrt(diag(SSigma_y))
+  
+  SSigma_eps = matrix(vec_SSigma_eps,M,M)
   ssigma_eps = sqrt(diag(SSigma_eps))
+  
   w = 2*m*ssigma_y/(Ni-1)
   
   h = vector(mode = "list", length = N_star)
-  
   for(j in 1:N_star){
     h[[j]]= grid
   }
