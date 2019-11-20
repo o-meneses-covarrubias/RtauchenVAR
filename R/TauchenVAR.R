@@ -1,7 +1,7 @@
 
 #Discretizes a vector VAR(1) process of size M according to Tauchen (1986)
 
-#The package includes the functions TgridVAR, RtauchenVAR 
+#The package includes the functions TgridVAR, Tstates_grid, Tstates_grid_index y RtauchenVAR 
 
 #TgridVAR generates the grid for the aproximating discrete-valued 
 #vector Markov Chain of the VAR(1) process
@@ -159,14 +159,4 @@ RtauchenVAR=function(Ni, SSigma_eps, A, m){
   return(P)
 }
 
-#Ejemplo Multivariado:
-# A=matrix(c(0.7,0.3,0.2,0.5),ncol=2)
-# Ni=c(5,5)
-# SSigma_eps=diag(2)*(0.02^2)
-# m=3
 
-#Ejemplo Univariado:
-# A=0.98
-# Ni=5
-# SSigma_eps=0.02^2
-# m=3
