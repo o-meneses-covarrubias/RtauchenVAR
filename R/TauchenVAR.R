@@ -15,7 +15,7 @@
 
 #Output:
 #List of M vectors with the sizes specified in Ni. Each vector contains 
-#the posible states of each component of the autoregresive vector y_t
+#the posible states of each dimension of the autoregresive vector y_t
 
 TgridVAR=function(Ni, SSigma_eps, A, m){
 #Defines the length of the random vector of the process
@@ -49,6 +49,10 @@ TgridVAR=function(Ni, SSigma_eps, A, m){
   return(grid)
 }
 
+#Tstates_grid returns an N_star x M matrix, in which each row is a posible state
+#of the MArkov chain, and each row is the value that the dimension i of the vector 
+#takes in that state
+
 Tstates_grid=function(Ni, SSigma_eps, A, m){
   grid = TgridVAR(Ni, SSigma_eps, A, m)
   
@@ -59,6 +63,10 @@ Tstates_grid=function(Ni, SSigma_eps, A, m){
   
   return(states_grid)
 }
+
+#Tstates_grid_index returns an N_star x M matrix, in which each row is a posible state
+#of the MArkov chain, and each row is the index of the grid for state i that
+#the dimension i of the vector takes in that state
 
 Tstates_grid_index=function(Ni){
   M = length(Ni)
@@ -76,19 +84,19 @@ Tstates_grid_index=function(Ni){
   return(states_grid_index)
 }
 
-
-
 #RTauchenVAR generates the transition matrix for all posible states. The states 
-#are in a vector of the lenght specified in Tauchen(1986).
+#are in a vector of the lenght N_star, as specified in Tauchen(1986).
 
-Rtauchen_vec=function(Ni, SSigma_eps, A, m){
+RtauchenVAR=function(Ni, SSigma_eps, A, m){
+#Takes the lenght of the vector
   M = length(Ni)
+#Takes the number of states of the MArkov chain
   N_star = prod(Ni)
+#Obtains the grid for each dimension
   grid = TgridVAR(Ni, SSigma_eps, A, m)
   states_grid = Tstates_grid(Ni, SSigma_eps, A, m)
   states_grid_index = Tstates_grid_index(Ni)
-  
-  
+#obtains the variances and places them accordingly
   if(M==1){
     vec_SSigma_eps = matrix(c(SSigma_eps))
     vec_SSigma_y = solve(1 - kronecker(A,A)) %*% vec_SSigma_eps
@@ -102,14 +110,17 @@ Rtauchen_vec=function(Ni, SSigma_eps, A, m){
   
   SSigma_eps = matrix(vec_SSigma_eps,M,M)
   ssigma_eps = sqrt(diag(SSigma_eps))
-  
+
+#Sets the length of the step for each dimension
   w = 2*m*ssigma_y/(Ni-1)
-  
+#Initializes the list to storage the transition probabilities for each diemnsion
   h = vector(mode = "list", length = N_star)
   for(j in 1:N_star){
     h[[j]]= grid
   }
-  
+#Computes the transition probabilities for each dimension of each state, as in Tauchen(1986).
+#h[[j]][[i]][l] is the probability that, starting in state j, the dimension i of the vector 
+#takes the value l of the grid for that dimension, on the next state.
   for(j in 1:N_star){
     y=states_grid[j,]
     mu=A%*%y
@@ -130,9 +141,14 @@ Rtauchen_vec=function(Ni, SSigma_eps, A, m){
       }
     }
   }
-  
+
+#Initializes the transition matrix for the Markov chain  
   P = array(0, dim = c(N_star,N_star))
-  aux_prod = rep(0,M)
+
+#Generates the transition probabilities form state j to state k as in Tauchen(1986).
+#For each state, all the probabilities of transition for each dimension are stored 
+#in  data.matrix(expand.grid(h[[j]])). Then, byu independence, the probability of changing
+#state is the product of the probability of changing value in each dimension.
   
   for(j in 1:N_star){
     aux_matrix = data.matrix(expand.grid(h[[j]]))
